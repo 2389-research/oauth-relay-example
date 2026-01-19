@@ -16,11 +16,11 @@ describe("PKCE", () => {
       expect(typeof challenge).toBe("string");
     });
 
-    it("should generate verifier with correct length (base64url of 32 bytes)", () => {
+    it("should generate verifier with correct length (base64url of 48 bytes)", () => {
       const { verifier } = createPkceChallenge();
 
-      // 32 bytes in base64url = 43 characters (32 * 4/3, rounded up, no padding)
-      expect(verifier.length).toBe(43);
+      // 48 bytes in base64url = 64 characters (above RFC 7636 minimum of 43)
+      expect(verifier.length).toBe(64);
     });
 
     it("should generate challenge with correct length (base64url of SHA-256 hash)", () => {
