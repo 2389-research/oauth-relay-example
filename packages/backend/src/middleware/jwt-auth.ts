@@ -48,11 +48,18 @@ export function jwtAuth(options: { required: boolean } = { required: true }) {
       const { payload } = await jose.jwtVerify(token, secret, {
         issuer: config.authServerUrl,
         audience: config.jwtAudience,
+        algorithms: ["HS256"], // Explicitly allow only HS256 to prevent algorithm confusion
       });
+
+      // Validate required claims
+      if (!payload.sub || typeof payload.sub !== "string") {
+        res.status(401).json({ error: "unauthorized", error_description: "Missing sub claim" });
+        return;
+      }
 
       // Attach user info to request
       req.user = {
-        sub: payload.sub as string,
+        sub: payload.sub,
         scope: (payload.scope as string) || "",
         clientId: (payload.client_id as string) || "",
       };

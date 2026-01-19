@@ -3,6 +3,27 @@
 
 import { config } from "../config.js";
 
+// Default timeout for HTTP requests (30 seconds)
+const DEFAULT_TIMEOUT_MS = 30000;
+
+/**
+ * Fetch with timeout using AbortController
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export interface Tool {
   name: string;
   description: string;
@@ -36,7 +57,7 @@ export class HttpClient {
    * Does not require authentication.
    */
   async listTools(): Promise<Tool[]> {
-    const response = await fetch(`${this.backendUrl}/mcp/tools`);
+    const response = await fetchWithTimeout(`${this.backendUrl}/mcp/tools`);
 
     if (!response.ok) {
       throw new Error(`Failed to list tools: ${response.status} ${response.statusText}`);
@@ -59,7 +80,7 @@ export class HttpClient {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${this.backendUrl}/mcp/tools/${name}`, {
+    const response = await fetchWithTimeout(`${this.backendUrl}/mcp/tools/${name}`, {
       method: "POST",
       headers,
       body: JSON.stringify({ arguments: args }),

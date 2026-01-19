@@ -3,6 +3,7 @@
 
 import http from "http";
 import { URL } from "url";
+import escapeHtml from "escape-html";
 
 export interface CallbackResult {
   code: string;
@@ -16,7 +17,7 @@ export interface CallbackError {
 
 export type CallbackResponse = CallbackResult | CallbackError;
 
-const SUCCESS_HTML = `<!DOCTYPE html>
+const SUCCESS_HTML = `<!DOCTYPE html
 <html>
 <head>
   <title>Authorization Successful</title>
@@ -51,7 +52,7 @@ const ERROR_HTML = (error: string, description?: string) => `<!DOCTYPE html>
   <div class="container">
     <h1>Authorization Failed</h1>
     <p>Something went wrong during authorization.</p>
-    <div class="error">${error}${description ? `: ${description}` : ""}</div>
+    <div class="error">${escapeHtml(error)}${description ? `: ${escapeHtml(description)}` : ""}</div>
   </div>
 </body>
 </html>`;

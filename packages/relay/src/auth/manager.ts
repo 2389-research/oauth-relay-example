@@ -19,7 +19,7 @@ interface TokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
-  refresh_token: string;
+  refresh_token?: string; // Optional per OAuth 2.1 spec
   scope: string;
 }
 
@@ -147,7 +147,7 @@ export class AuthManager {
 
     return {
       accessToken: data.access_token,
-      refreshToken: data.refresh_token,
+      refreshToken: data.refresh_token || "", // May not be provided by all servers
       expiresAt: Date.now() + data.expires_in * 1000,
       scope: data.scope,
     };
@@ -155,8 +155,12 @@ export class AuthManager {
 
   /**
    * Refresh an access token using a refresh token.
+   * @throws Error if refresh token is empty or refresh fails
    */
   async refresh(refreshToken: string): Promise<TokenSet> {
+    if (!refreshToken) {
+      throw new Error("No refresh token available");
+    }
     console.error("[auth] Refreshing access token...");
 
     const metadata = await this.fetchMetadata();

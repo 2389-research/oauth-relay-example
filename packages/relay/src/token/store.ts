@@ -46,6 +46,7 @@ export class TokenStore {
 
   /**
    * Save tokens to disk with restricted permissions.
+   * Uses atomic write (write to temp file, then rename) to prevent corruption.
    */
   async save(tokens: TokenSet): Promise<void> {
     try {
@@ -53,9 +54,11 @@ export class TokenStore {
       const dir = path.dirname(this.tokenPath);
       await fs.mkdir(dir, { recursive: true, mode: 0o700 });
 
-      // Write file with restricted permissions
-      const data = JSON.stringify(tokens, null, 2);
-      await fs.writeFile(this.tokenPath, data, { mode: 0o600 });
+      // Atomic write: write to temp file first, then rename
+      const tempPath = `${this.tokenPath}.tmp`;
+      const data = JSON.stringify(tokens);
+      await fs.writeFile(tempPath, data, { mode: 0o600 });
+      await fs.rename(tempPath, this.tokenPath);
     } catch (err) {
       console.error("[token-store] Failed to save tokens:", err);
       throw err;
