@@ -14,6 +14,22 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
+/**
+ * Send 401 response with WWW-Authenticate header per RFC 6750.
+ */
+function sendUnauthorized(
+  res: Response,
+  error: string,
+  description: string
+): void {
+  // RFC 6750 Section 3: Include WWW-Authenticate header
+  res.setHeader(
+    "WWW-Authenticate",
+    `Bearer realm="api", error="${error}", error_description="${description}"`
+  );
+  res.status(401).json({ error, error_description: description });
+}
+
 // Middleware factory - returns middleware that optionally requires auth
 export function jwtAuth(options: { required: boolean } = { required: true }) {
   return async (
@@ -26,7 +42,7 @@ export function jwtAuth(options: { required: boolean } = { required: true }) {
     // No auth header
     if (!authHeader) {
       if (options.required) {
-        res.status(401).json({ error: "unauthorized", error_description: "Missing Authorization header" });
+        sendUnauthorized(res, "invalid_request", "Missing Authorization header");
         return;
       }
       next();
@@ -36,7 +52,7 @@ export function jwtAuth(options: { required: boolean } = { required: true }) {
     // Parse Bearer token
     const parts = authHeader.split(" ");
     if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
-      res.status(401).json({ error: "unauthorized", error_description: "Invalid Authorization header format" });
+      sendUnauthorized(res, "invalid_request", "Invalid Authorization header format");
       return;
     }
 
@@ -53,7 +69,7 @@ export function jwtAuth(options: { required: boolean } = { required: true }) {
 
       // Validate required claims
       if (!payload.sub || typeof payload.sub !== "string") {
-        res.status(401).json({ error: "unauthorized", error_description: "Missing sub claim" });
+        sendUnauthorized(res, "invalid_token", "Missing sub claim");
         return;
       }
 
@@ -67,15 +83,15 @@ export function jwtAuth(options: { required: boolean } = { required: true }) {
       next();
     } catch (err) {
       if (err instanceof jose.errors.JWTExpired) {
-        res.status(401).json({ error: "unauthorized", error_description: "Token expired" });
+        sendUnauthorized(res, "invalid_token", "Token expired");
         return;
       }
       if (err instanceof jose.errors.JWTClaimValidationFailed) {
-        res.status(401).json({ error: "unauthorized", error_description: "Token validation failed" });
+        sendUnauthorized(res, "invalid_token", "Token validation failed");
         return;
       }
       console.error("JWT verification error:", err);
-      res.status(401).json({ error: "unauthorized", error_description: "Invalid token" });
+      sendUnauthorized(res, "invalid_token", "Invalid token");
     }
   };
 }

@@ -39,6 +39,7 @@ describe("JWT Auth Middleware", () => {
     const res: Partial<Response> = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
+      setHeader: vi.fn().mockReturnThis(),
     };
     return res as Response;
   }
@@ -58,8 +59,12 @@ describe("JWT Auth Middleware", () => {
       await middleware(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "WWW-Authenticate",
+        expect.stringContaining("invalid_request")
+      );
       expect(res.json).toHaveBeenCalledWith({
-        error: "unauthorized",
+        error: "invalid_request",
         error_description: "Missing Authorization header",
       });
       expect(next).not.toHaveBeenCalled();
@@ -73,8 +78,12 @@ describe("JWT Auth Middleware", () => {
       await middleware(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "WWW-Authenticate",
+        expect.stringContaining("invalid_request")
+      );
       expect(res.json).toHaveBeenCalledWith({
-        error: "unauthorized",
+        error: "invalid_request",
         error_description: "Invalid Authorization header format",
       });
       expect(next).not.toHaveBeenCalled();
@@ -88,8 +97,12 @@ describe("JWT Auth Middleware", () => {
       await middleware(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "WWW-Authenticate",
+        expect.stringContaining("invalid_token")
+      );
       expect(res.json).toHaveBeenCalledWith({
-        error: "unauthorized",
+        error: "invalid_token",
         error_description: "Invalid token",
       });
       expect(next).not.toHaveBeenCalled();
@@ -107,8 +120,12 @@ describe("JWT Auth Middleware", () => {
       await middleware(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "WWW-Authenticate",
+        expect.stringContaining("invalid_token")
+      );
       expect(res.json).toHaveBeenCalledWith({
-        error: "unauthorized",
+        error: "invalid_token",
         error_description: "Token expired",
       });
       expect(next).not.toHaveBeenCalled();
@@ -151,8 +168,12 @@ describe("JWT Auth Middleware", () => {
       await middleware(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "WWW-Authenticate",
+        expect.stringContaining("invalid_token")
+      );
       expect(res.json).toHaveBeenCalledWith({
-        error: "unauthorized",
+        error: "invalid_token",
         error_description: "Token validation failed",
       });
       expect(next).not.toHaveBeenCalled();
@@ -174,8 +195,12 @@ describe("JWT Auth Middleware", () => {
       await middleware(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "WWW-Authenticate",
+        expect.stringContaining("invalid_token")
+      );
       expect(res.json).toHaveBeenCalledWith({
-        error: "unauthorized",
+        error: "invalid_token",
         error_description: "Token validation failed",
       });
       expect(next).not.toHaveBeenCalled();

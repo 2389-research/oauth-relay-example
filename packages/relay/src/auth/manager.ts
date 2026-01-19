@@ -42,6 +42,7 @@ export class AuthManager {
 
   /**
    * Fetch OAuth metadata from the authorization server.
+   * Validates issuer matches expected URL per RFC 8414 Section 3.1.
    */
   private async fetchMetadata(): Promise<OAuthMetadata> {
     const metadataUrl = `${this.authServerUrl}/.well-known/oauth-authorization-server`;
@@ -51,7 +52,16 @@ export class AuthManager {
       throw new Error(`Failed to fetch OAuth metadata: ${response.status} ${response.statusText}`);
     }
 
-    return (await response.json()) as OAuthMetadata;
+    const metadata = (await response.json()) as OAuthMetadata;
+
+    // RFC 8414 Section 3.1: Validate issuer matches expected URL
+    if (metadata.issuer !== this.authServerUrl) {
+      throw new Error(
+        `OAuth metadata issuer mismatch: expected ${this.authServerUrl}, got ${metadata.issuer}`
+      );
+    }
+
+    return metadata;
   }
 
   /**
