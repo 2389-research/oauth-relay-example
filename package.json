@@ -1,0 +1,21 @@
+{
+  "name": "oauth-relay-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "test:relay": "npm run test --workspace=packages/relay",
+    "test:backend": "npm run test --workspace=packages/backend",
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "dev:backend:standalone": "npm run dev:standalone --workspace=packages/backend",
+    "dev:relay": "npm run dev --workspace=packages/relay"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

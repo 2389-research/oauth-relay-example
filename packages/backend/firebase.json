@@ -1,0 +1,22 @@
+{
+  "functions": {
+    "source": ".",
+    "predeploy": ["npm run build"],
+    "runtime": "nodejs22"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5002
+    },
+    "ui": {
+      "enabled": false
+    },
+    "hub": {
+      "port": 4402
+    },
+    "logging": {
+      "port": 4502
+    },
+    "singleProjectMode": true
+  }
+}
